@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { motion, useAnimation } from 'framer-motion';
+import axios from 'axios';
 
 const ActionHub = () => {
   const [ngos, setNgos] = useState([]);
@@ -32,14 +33,14 @@ const ActionHub = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://socio-99.onrender.com/api/action-hub'); // Update port if needed
-        if (!response.ok) throw new Error('Failed to fetch data');
-        
-        const data = await response.json();
+        const { data } = await axios.get('https://socio-99.onrender.com/api/action-hub');
         setNgos(data);
-        controls.start({ opacity: 1, y: 0 }); // Animate content in
+        controls.start({ opacity: 1, y: 0 });
       } catch (err) {
-        setToast({ open: true, message: 'Failed to load organizations. Please try again later.' });
+        setToast({ 
+          open: true, 
+          message: err.response?.data?.message || 'Failed to load organizations' 
+        });
       } finally {
         setLoading(false);
       }
@@ -51,7 +52,8 @@ const ActionHub = () => {
   const filteredNgos = ngos.filter(ngo => {
     const matchesSearch = ngo.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filters.type === 'all' || ngo.type === filters.type;
-    const matchesLocation = filters.location ? ngo.location?.toLowerCase().includes(filters.location.toLowerCase()) : true;
+    const matchesLocation = filters.location ? 
+      ngo.location?.toLowerCase().includes(filters.location.toLowerCase()) : true;
     return matchesSearch && matchesType && matchesLocation;
   });
 
@@ -114,7 +116,7 @@ const ActionHub = () => {
       ) : (
         <Grid container spacing={4}>
           {filteredNgos.map((ngo, index) => (
-            <Grid item xs={12} sm={6} md={4} key={ngo.id}>
+            <Grid item xs={12} sm={6} md={4} key={ngo.id || index}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
@@ -138,7 +140,7 @@ const ActionHub = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://picsum.photos/400/300?random=${ngo.id}`}
+                    image={`https://picsum.photos/400/300?random=${ngo.id || index}`}
                     alt={ngo.name}
                     sx={{ objectFit: 'cover' }}
                   />
@@ -161,7 +163,7 @@ const ActionHub = () => {
                     {ngo.website && ngo.website !== 'Not available' && (
                       <Typography variant="caption" sx={{ display: 'block', mb: 2 }}>
                         🌐 <a 
-                          href={ngo.website} 
+                          href={ngo.website.startsWith('http') ? ngo.website : `https://${ngo.website}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{ color: theme.palette.success.main }}
