@@ -1,7 +1,7 @@
 // src/utils/api.js
 import axios from 'axios';
 
-const API_BASE_URL = 'https://socio-99.onrender.com//api'; // Ensure port matches your backend
+const API_BASE_URL = 'https://socio-99.onrender.com/api'; // Ensure port matches your backend
 
 export const fetchContent = async () => {
   const response = await axios.get(`${API_BASE_URL}/content`);
