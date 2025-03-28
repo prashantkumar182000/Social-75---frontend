@@ -1,6 +1,6 @@
 import React from 'react';
 import 'leaflet/dist/leaflet.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import HeroSection from './components/HeroSection';
 import ContentLibrary from './components/ContentLibrary';
@@ -17,7 +17,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 const App = () => {
   return (
-    <Router>
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -37,7 +36,6 @@ const App = () => {
           </Route>
         </Routes>
       </ErrorBoundary>
-    </Router>
   );
 };
 
