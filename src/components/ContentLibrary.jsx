@@ -18,6 +18,8 @@ import {
 import { Close } from '@mui/icons-material';
 import { fetchContent } from '../utils/api';
 import { motion, useAnimation } from 'framer-motion';
+import axios from 'axios';
+
 
 const ContentLibrary = () => {
   const [talks, setTalks] = useState([]);
