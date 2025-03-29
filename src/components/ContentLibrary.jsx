@@ -16,10 +16,8 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { fetchContent } from '../utils/api';
 import { motion, useAnimation } from 'framer-motion';
-import axios from 'axios';
-
+import { getTalks } from '../utils/apiHelpers';
 
 const ContentLibrary = () => {
   const [talks, setTalks] = useState([]);
@@ -30,51 +28,38 @@ const ContentLibrary = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const controls = useAnimation();
 
-  // Fetch TED Talks data
-  // Replace useEffect with this version
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      console.log("Starting fetch..."); // Debug log
-      const { data } = await axios.get(
-        'https://socio-99.onrender.com/api/content',
-        { 
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await getTalks();
+        setTalks(data);
+        controls.start({ opacity: 1, y: 0 });
+        
+        if (data === dummyTalks) {
+          setToast({
+            open: true,
+            message: 'Using sample data - API might be unavailable'
+          });
         }
-      );
-      
-      console.log("API Response:", data); // Verify data structure
-      
-      if (!data || data.length === 0) {
-        throw new Error("Empty response");
+      } catch (error) {
+        setToast({
+          open: true,
+          message: 'Failed to load content. Please try again later.'
+        });
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setTalks(data); // Or setTalks for ContentLibrary
-      controls.start({ opacity: 1, y: 0 });
-      
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setToast({ 
-        open: true, 
-        message: 'Failed to load data. Please try again.' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  fetchData();
-}, [controls]);
+    loadData();
+  }, [controls]);
 
-  // Filter talks based on search term
   const filteredTalks = talks.filter(talk => 
     talk.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
-      {/* Header Section */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h3" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
           Content Library
@@ -96,44 +81,36 @@ useEffect(() => {
         />
       </Box>
 
-      {/* Content Grid */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
           <CircularProgress size={60} sx={{ color: theme.palette.primary.main }} />
         </Box>
-      ) : filteredTalks.length === 0 ? (
-        <Typography variant="h6" sx={{ textAlign: 'center', color: 'text.secondary' }}>
-          No talks found. Try a different search term.
-        </Typography>
       ) : (
         <Grid container spacing={4}>
           {filteredTalks.map((talk, index) => (
-            <Grid item xs={12} sm={6} md={4} key={talk.id}>
+            <Grid item xs={12} sm={6} md={4} key={`talk-${talk.id}-${index}`}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    transition: '0.3s',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: 3,
-                    '&:hover': { 
-                      transform: 'translateY(-5px)',
-                      boxShadow: 6
-                    }
-                  }}
-                >
-                  {/* Dynamic Image */}
+                <Card sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  transition: '0.3s',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  '&:hover': { 
+                    transform: 'translateY(-5px)',
+                    boxShadow: 6
+                  }
+                }}>
                   <CardMedia
                     component="img"
                     height="200"
-                    image={talk.image || `https://picsum.photos/id/${Math.abs(talk.id % 1000)}/400/300`}
+                    image={talk.image || `https://picsum.photos/id/${Math.abs(talk.id)}/400/300`}
                     alt={talk.title}
                     sx={{ objectFit: 'cover' }}
                   />
@@ -173,10 +150,9 @@ useEffect(() => {
         </Grid>
       )}
 
-      {/* Toast Notifications */}
       <Snackbar
         open={toast.open}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={() => setToast(prev => ({ ...prev, open: false }))}
         message={toast.message}
         action={

@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { motion, useAnimation } from 'framer-motion';
-import axios from 'axios';
+import { getNGOs } from '../utils/apiHelpers';
 
 const ActionHub = () => {
   const [ngos, setNgos] = useState([]);
@@ -29,44 +29,32 @@ const ActionHub = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const controls = useAnimation();
 
-  // Fetch NGO data
-  // Replace useEffect with this version
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      console.log("Starting fetch..."); // Debug log
-      const { data } = await axios.get(
-        'https://socio-99.onrender.com/api/action-hub',
-        { 
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await getNGOs();
+        setNgos(data);
+        controls.start({ opacity: 1, y: 0 });
+        
+        if (data === dummyNGOs) {
+          setToast({
+            open: true,
+            message: 'Using sample data - API might be unavailable'
+          });
         }
-      );
-      
-      console.log("API Response:", data); // Verify data structure
-      
-      if (!data || data.length === 0) {
-        throw new Error("Empty response");
+      } catch (error) {
+        setToast({
+          open: true,
+          message: 'Failed to load data. Please try again later.'
+        });
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setNgos(data); // Or setTalks for ContentLibrary
-      controls.start({ opacity: 1, y: 0 });
-      
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setToast({ 
-        open: true, 
-        message: 'Failed to load data. Please try again.' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  fetchData();
-}, [controls]);
+    loadData();
+  }, [controls]);
 
-  // Filtering function
   const filteredNgos = ngos.filter(ngo => {
     const matchesSearch = ngo.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filters.type === 'all' || ngo.type === filters.type;
@@ -77,7 +65,6 @@ useEffect(() => {
 
   return (
     <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
-      {/* Header Section */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h3" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
           Action Hub
@@ -99,7 +86,6 @@ useEffect(() => {
         />
       </Box>
 
-      {/* Filter Chips */}
       <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Chip
           label="All"
@@ -122,43 +108,36 @@ useEffect(() => {
         />
       </Box>
 
-      {/* Content Grid */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
           <CircularProgress size={60} sx={{ color: theme.palette.success.main }} />
         </Box>
-      ) : filteredNgos.length === 0 ? (
-        <Typography variant="h6" sx={{ textAlign: 'center', color: 'text.secondary' }}>
-          No organizations found. Try a different search term.
-        </Typography>
       ) : (
         <Grid container spacing={4}>
           {filteredNgos.map((ngo, index) => (
-            <Grid item xs={12} sm={6} md={4} key={ngo.id || index}>
+            <Grid item xs={12} sm={6} md={4} key={`ngo-${ngo.id}-${index}`}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    transition: '0.3s',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: 3,
-                    '&:hover': { 
-                      transform: 'translateY(-5px)',
-                      boxShadow: 6
-                    }
-                  }}
-                >
+                <Card sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  transition: '0.3s',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  '&:hover': { 
+                    transform: 'translateY(-5px)',
+                    boxShadow: 6
+                  }
+                }}>
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://picsum.photos/id/${Math.abs(ngo.id % 1000)}/400/300`}
+                    image={ngo.image || `https://picsum.photos/id/${Math.abs(ngo.id)}/400/300`}
                     alt={ngo.name}
                     sx={{ objectFit: 'cover' }}
                   />
@@ -178,7 +157,7 @@ useEffect(() => {
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       📍 {ngo.location}
                     </Typography>
-                    {ngo.website && ngo.website !== 'Not available' && (
+                    {ngo.website && (
                       <Typography variant="caption" sx={{ display: 'block', mb: 2 }}>
                         🌐 <a 
                           href={ngo.website.startsWith('http') ? ngo.website : `https://${ngo.website}`} 
@@ -198,10 +177,9 @@ useEffect(() => {
         </Grid>
       )}
 
-      {/* Toast Notifications */}
       <Snackbar
         open={toast.open}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={() => setToast(prev => ({ ...prev, open: false }))}
         message={toast.message}
         action={
