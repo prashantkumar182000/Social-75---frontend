@@ -29,20 +29,41 @@ const ContentLibrary = () => {
   const controls = useAnimation();
 
   // Fetch TED Talks data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchContent();
-        setTalks(data);
-        controls.start({ opacity: 1, y: 0 }); // Animate content in
-      } catch (err) {
-        setToast({ open: true, message: 'Failed to load content. Please try again later.' });
-      } finally {
-        setLoading(false);
+  // Replace useEffect with this version
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      console.log("Starting fetch..."); // Debug log
+      const { data } = await axios.get(
+        'https://socio-99.onrender.com/api/content',
+        { 
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true 
+        }
+      );
+      
+      console.log("API Response:", data); // Verify data structure
+      
+      if (!data || data.length === 0) {
+        throw new Error("Empty response");
       }
-    };
-    fetchData();
-  }, [controls]);
+
+      setNgos(data); // Or setTalks for ContentLibrary
+      controls.start({ opacity: 1, y: 0 });
+      
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setToast({ 
+        open: true, 
+        message: 'Failed to load data. Please try again.' 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  fetchData();
+}, [controls]);
 
   // Filter talks based on search term
   const filteredTalks = talks.filter(talk => 

@@ -30,23 +30,41 @@ const ActionHub = () => {
   const controls = useAnimation();
 
   // Fetch NGO data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await axios.get('https://socio-99.onrender.com/api/action-hub');
-        setNgos(data);
-        controls.start({ opacity: 1, y: 0 });
-      } catch (err) {
-        setToast({ 
-          open: true, 
-          message: err.response?.data?.message || 'Failed to load organizations' 
-        });
-      } finally {
-        setLoading(false);
+  // Replace useEffect with this version
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      console.log("Starting fetch..."); // Debug log
+      const { data } = await axios.get(
+        'https://socio-99.onrender.com/api/action-hub',
+        { 
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true 
+        }
+      );
+      
+      console.log("API Response:", data); // Verify data structure
+      
+      if (!data || data.length === 0) {
+        throw new Error("Empty response");
       }
-    };
-    fetchData();
-  }, [controls]);
+
+      setNgos(data); // Or setTalks for ContentLibrary
+      controls.start({ opacity: 1, y: 0 });
+      
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setToast({ 
+        open: true, 
+        message: 'Failed to load data. Please try again.' 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  fetchData();
+}, [controls]);
 
   // Filtering function
   const filteredNgos = ngos.filter(ngo => {
