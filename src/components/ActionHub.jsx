@@ -158,7 +158,7 @@ useEffect(() => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`https://picsum.photos/400/300?random=${ngo.id || index}`}
+                    image={`https://picsum.photos/id/${Math.abs(ngo.id % 1000)}/400/300`}
                     alt={ngo.name}
                     sx={{ objectFit: 'cover' }}
                   />

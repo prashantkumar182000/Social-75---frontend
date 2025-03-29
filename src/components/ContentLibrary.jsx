@@ -133,7 +133,7 @@ useEffect(() => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={talk.image || `https://picsum.photos/400/300?random=${talk.id}`}
+                    image={talk.image || `https://picsum.photos/id/${Math.abs(talk.id % 1000)}/400/300`}
                     alt={talk.title}
                     sx={{ objectFit: 'cover' }}
                   />
