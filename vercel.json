@@ -1,8 +1,13 @@
 {
-    "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/index.html"
-      }
-    ]
-  }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https://socio-99.onrender.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://socio-99.onrender.com; img-src 'self' https://*.picsum.photos data:; style-src 'self' 'unsafe-inline';"
+        }
+      ]
+    }
+  ]
+}
