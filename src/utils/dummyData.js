@@ -1,50 +1,57 @@
+// src/utils/dummyData.js
 export const dummyNGOs = [
     {
       id: 1,
-      name: "Greenpeace International",
+      name: "Green Earth Initiative",
       type: "NGO",
-      mission: "Environmental conservation and activism",
-      location: "Amsterdam, Netherlands",
-      website: "https://www.greenpeace.org",
-      image: "https://picsum.photos/id/10/400/300"
+      mission: "Promoting sustainable environmental practices through community engagement and education.",
+      location: "New Delhi, India",
+      website: "https://greenearth.org",
+      category: "environment"
     },
     {
       id: 2,
-      name: "Doctors Without Borders",
+      name: "Education for All",
       type: "NGO",
-      mission: "Medical humanitarian organization",
-      location: "Geneva, Switzerland",
-      website: "https://www.msf.org",
-      image: "https://picsum.photos/id/20/400/300"
+      mission: "Providing free education and resources to underprivileged children across rural India.",
+      location: "Mumbai, India",
+      website: "https://edu4all.org",
+      category: "education"
     },
     {
       id: 3,
-      name: "World Wildlife Fund",
+      name: "Health Warriors",
       type: "NGO",
-      mission: "Wildlife conservation and endangered species",
-      location: "Washington, D.C., USA",
-      website: "https://www.worldwildlife.org",
-      image: "https://picsum.photos/id/30/400/300"
-    }
+      mission: "Improving healthcare access in remote areas through mobile clinics and awareness programs.",
+      location: "Chennai, India",
+      website: "https://healthwarriors.in",
+      category: "health"
+    },
   ];
   
   export const dummyTalks = [
     {
       id: 1,
-      title: "The Power of Vulnerability",
-      speaker: "Brené Brown",
-      description: "A talk about human connection and courage",
+      title: "The Power of Sustainable Living",
+      speaker: "Dr. Anika Patel",
       duration: 1200,
-      url: "https://www.ted.com/talks/brene_brown_the_power_of_vulnerability",
-      image: "https://picsum.photos/id/40/400/300"
+      description: "Exploring innovative approaches to eco-friendly urban development and community-driven sustainability initiatives.",
+      url: "https://ted.com/talks/sustainable-living"
     },
     {
       id: 2,
-      title: "How Great Leaders Inspire Action",
-      speaker: "Simon Sinek",
-      description: "The golden circle theory of inspirational leadership",
-      duration: 1080,
-      url: "https://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action",
-      image: "https://picsum.photos/id/50/400/300"
-    }
+      title: "Tech for Social Good",
+      speaker: "Rahul Sharma",
+      duration: 900,
+      description: "Leveraging emerging technologies to solve pressing community challenges and drive social impact.",
+      url: "https://ted.com/talks/tech-social-good"
+    },
+    {
+      id: 3,
+      title: "Women in STEM Leadership",
+      speaker: "Priya Deshmukh",
+      duration: 1500,
+      description: "Breaking barriers and creating opportunities for women in science and technology fields.",
+      url: "https://ted.com/talks/women-stem"
+    },
   ];

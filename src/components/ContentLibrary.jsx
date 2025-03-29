@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  TextField, 
-  Chip, 
-  Button, 
-  CircularProgress,
-  Snackbar,
-  IconButton,
-  useTheme,
-  useMediaQuery
+  Box, Typography, Grid, Card, CardContent, CardMedia, 
+  TextField, Chip, Button, CircularProgress, Snackbar, IconButton,
+  useTheme, useMediaQuery
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { motion, useAnimation } from 'framer-motion';
-import { getTalks } from '../utils/apiHelpers';
+import axios from 'axios';
+import { dummyTalks } from '../utils/dummyData';
+import { getRandomImage } from '../utils/helpers';
 
 const ContentLibrary = () => {
   const [talks, setTalks] = useState([]);
@@ -29,34 +20,38 @@ const ContentLibrary = () => {
   const controls = useAnimation();
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getTalks();
-        setTalks(data);
-        controls.start({ opacity: 1, y: 0 });
+        const { data } = await axios.get(
+          'https://socio-99.onrender.com/api/content',
+          { timeout: 5000 }
+        );
         
-        if (data === dummyTalks) {
-          setToast({
-            open: true,
-            message: 'Using sample data - API might be unavailable'
-          });
+        const validData = Array.isArray(data) && data.length > 0 ? data : dummyTalks;
+        setTalks(validData);
+        
+        if(data.length === 0) {
+          setToast({ open: true, message: 'Using sample content' });
         }
-      } catch (error) {
-        setToast({
-          open: true,
-          message: 'Failed to load content. Please try again later.'
-        });
+
+      } catch (err) {
+        console.error("Using dummy data:", err);
+        setTalks(dummyTalks);
+        setToast({ open: true, message: 'Showing offline content' });
       } finally {
         setLoading(false);
+        controls.start({ opacity: 1, y: 0 });
       }
     };
 
-    loadData();
+    fetchData();
   }, [controls]);
 
-  const filteredTalks = talks.filter(talk => 
-    talk.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTalks = talks.filter(talk => {
+    const searchMatch = talk.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      talk.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return searchMatch;
+  });
 
   return (
     <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
@@ -74,9 +69,7 @@ const ContentLibrary = () => {
           sx={{ 
             bgcolor: theme.palette.background.paper,
             maxWidth: 600,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-            },
+            '& .MuiOutlinedInput-root': { borderRadius: 2 },
           }}
         />
       </Box>
@@ -88,7 +81,7 @@ const ContentLibrary = () => {
       ) : (
         <Grid container spacing={4}>
           {filteredTalks.map((talk, index) => (
-            <Grid item xs={12} sm={6} md={4} key={`talk-${talk.id}-${index}`}>
+            <Grid item xs={12} sm={6} md={4} key={talk.id || index}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
@@ -97,9 +90,9 @@ const ContentLibrary = () => {
                 <Card sx={{ 
                   height: '100%', 
                   display: 'flex', 
-                  flexDirection: 'column', 
+                  flexDirection: 'column',
                   transition: '0.3s',
-                  borderRadius: 2,
+                  borderRadius: 4,
                   overflow: 'hidden',
                   boxShadow: 3,
                   '&:hover': { 
@@ -110,7 +103,7 @@ const ContentLibrary = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={talk.image || `https://picsum.photos/id/${Math.abs(talk.id)}/400/300`}
+                    image={getRandomImage(talk.id)}
                     alt={talk.title}
                     sx={{ objectFit: 'cover' }}
                   />
@@ -122,26 +115,32 @@ const ContentLibrary = () => {
                       label={talk.speaker} 
                       color="primary" 
                       size="small" 
-                      sx={{ mb: 2 }}
+                      sx={{ mb: 2, borderRadius: 2 }}
                     />
-                    <Typography variant="body2" paragraph sx={{ minHeight: 80 }}>
-                      {talk.description || 'No description available.'}
+                    <Typography variant="body2" paragraph sx={{ minHeight: 100 }}>
+                      {talk.description}
                     </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 2 }}>
-                      🕒 {Math.floor(talk.duration / 60)} mins
-                    </Typography>
-                    <Button 
-                      variant="contained" 
-                      href={talk.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      sx={{ 
-                        bgcolor: theme.palette.primary.main,
-                        '&:hover': { bgcolor: theme.palette.primary.dark }
-                      }}
-                    >
-                      Watch Now
-                    </Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Chip 
+                        label={`${Math.floor(talk.duration / 60)} mins`}
+                        variant="outlined"
+                        sx={{ borderRadius: 2 }}
+                      />
+                      <Button 
+                        variant="contained"
+                        href={talk.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ 
+                          borderRadius: 2,
+                          px: 3,
+                          bgcolor: theme.palette.primary.main,
+                          '&:hover': { bgcolor: theme.palette.primary.dark }
+                        }}
+                      >
+                        Watch Now
+                      </Button>
+                    </Box>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -152,7 +151,7 @@ const ContentLibrary = () => {
 
       <Snackbar
         open={toast.open}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={() => setToast(prev => ({ ...prev, open: false }))}
         message={toast.message}
         action={

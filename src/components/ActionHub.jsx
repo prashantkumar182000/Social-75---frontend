@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  TextField, 
-  Chip, 
-  Button, 
-  CircularProgress,
-  Snackbar,
-  IconButton,
-  useTheme,
-  useMediaQuery
+  Box, Typography, Grid, Card, CardContent, CardMedia, 
+  TextField, Chip, Button, CircularProgress, Snackbar, IconButton,
+  useTheme, useMediaQuery
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { motion, useAnimation } from 'framer-motion';
-import { getNGOs } from '../utils/apiHelpers';
+import axios from 'axios';
+import { dummyNGOs } from '../utils/dummyData';
+import { getRandomImage } from '../utils/helpers';
 
 const ActionHub = () => {
   const [ngos, setNgos] = useState([]);
@@ -30,37 +21,40 @@ const ActionHub = () => {
   const controls = useAnimation();
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getNGOs();
-        setNgos(data);
-        controls.start({ opacity: 1, y: 0 });
+        const { data } = await axios.get(
+          'https://socio-99.onrender.com/api/action-hub',
+          { timeout: 5000 }
+        );
         
-        if (data === dummyNGOs) {
-          setToast({
-            open: true,
-            message: 'Using sample data - API might be unavailable'
-          });
+        const validData = Array.isArray(data) && data.length > 0 ? data : dummyNGOs;
+        setNgos(validData);
+        
+        if(data.length === 0) {
+          setToast({ open: true, message: 'Using sample data' });
         }
-      } catch (error) {
-        setToast({
-          open: true,
-          message: 'Failed to load data. Please try again later.'
-        });
+
+      } catch (err) {
+        console.error("Using dummy data:", err);
+        setNgos(dummyNGOs);
+        setToast({ open: true, message: 'Showing offline data' });
       } finally {
         setLoading(false);
+        controls.start({ opacity: 1, y: 0 });
       }
     };
 
-    loadData();
+    fetchData();
   }, [controls]);
 
   const filteredNgos = ngos.filter(ngo => {
-    const matchesSearch = ngo.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filters.type === 'all' || ngo.type === filters.type;
-    const matchesLocation = filters.location ? 
-      ngo.location?.toLowerCase().includes(filters.location.toLowerCase()) : true;
-    return matchesSearch && matchesType && matchesLocation;
+    const searchMatch = ngo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ngo.mission.toLowerCase().includes(searchTerm.toLowerCase());
+    const typeMatch = filters.type === 'all' || ngo.type === filters.type;
+    const locationMatch = filters.location ? 
+      ngo.location.toLowerCase().includes(filters.location.toLowerCase()) : true;
+    return searchMatch && typeMatch && locationMatch;
   });
 
   return (
@@ -79,9 +73,7 @@ const ActionHub = () => {
           sx={{ 
             bgcolor: theme.palette.background.paper,
             maxWidth: 600,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-            },
+            '& .MuiOutlinedInput-root': { borderRadius: 2 },
           }}
         />
       </Box>
@@ -115,7 +107,7 @@ const ActionHub = () => {
       ) : (
         <Grid container spacing={4}>
           {filteredNgos.map((ngo, index) => (
-            <Grid item xs={12} sm={6} md={4} key={`ngo-${ngo.id}-${index}`}>
+            <Grid item xs={12} sm={6} md={4} key={ngo.id || index}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
@@ -124,9 +116,9 @@ const ActionHub = () => {
                 <Card sx={{ 
                   height: '100%', 
                   display: 'flex', 
-                  flexDirection: 'column', 
+                  flexDirection: 'column',
                   transition: '0.3s',
-                  borderRadius: 2,
+                  borderRadius: 4,
                   overflow: 'hidden',
                   boxShadow: 3,
                   '&:hover': { 
@@ -137,7 +129,7 @@ const ActionHub = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={ngo.image || `https://picsum.photos/id/${Math.abs(ngo.id)}/400/300`}
+                    image={getRandomImage(ngo.id)}
                     alt={ngo.name}
                     sx={{ objectFit: 'cover' }}
                   />
@@ -158,16 +150,24 @@ const ActionHub = () => {
                       📍 {ngo.location}
                     </Typography>
                     {ngo.website && (
-                      <Typography variant="caption" sx={{ display: 'block', mb: 2 }}>
-                        🌐 <a 
-                          href={ngo.website.startsWith('http') ? ngo.website : `https://${ngo.website}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          style={{ color: theme.palette.success.main }}
-                        >
-                          Visit Website
-                        </a>
-                      </Typography>
+                      <Button 
+                        variant="outlined"
+                        fullWidth
+                        href={ngo.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ 
+                          mt: 1,
+                          borderRadius: 2,
+                          borderColor: theme.palette.success.main,
+                          color: theme.palette.success.main,
+                          '&:hover': {
+                            backgroundColor: theme.palette.success.light + '15'
+                          }
+                        }}
+                      >
+                        Visit Website
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
@@ -179,7 +179,7 @@ const ActionHub = () => {
 
       <Snackbar
         open={toast.open}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={() => setToast(prev => ({ ...prev, open: false }))}
         message={toast.message}
         action={
