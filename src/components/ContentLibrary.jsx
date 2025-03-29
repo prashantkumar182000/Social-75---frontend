@@ -50,7 +50,7 @@ useEffect(() => {
         throw new Error("Empty response");
       }
 
-      setNgos(data); // Or setTalks for ContentLibrary
+      setTalk(data); // Or setTalks for ContentLibrary
       controls.start({ opacity: 1, y: 0 });
       
     } catch (err) {
