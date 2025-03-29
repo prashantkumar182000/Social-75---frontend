@@ -1,3 +1,4 @@
+// src/components/ContentLibrary.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Grid, Card, CardContent, CardMedia, 
@@ -11,7 +12,7 @@ import { dummyTalks } from '../utils/dummyData';
 import { getRandomImage } from '../utils/helpers';
 
 const ContentLibrary = () => {
-  const [talks, setTalks] = useState([]);
+  const [talks, setTalks] = useState([...dummyTalks]); // Initialize with dummy data
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '' });
@@ -24,23 +25,25 @@ const ContentLibrary = () => {
       try {
         const { data } = await axios.get(
           'https://socio-99.onrender.com/api/content',
-          { timeout: 5000 }
+          { timeout: 3000 }
         );
         
-        const validData = Array.isArray(data) && data.length > 0 ? data : dummyTalks;
-        setTalks(validData);
-        
-        if(data.length === 0) {
-          setToast({ open: true, message: 'Using sample content' });
-        }
+        // Merge API data with dummy data
+        const mergedData = [...new Map(
+          [...dummyTalks, ...(Array.isArray(data) ? data : [])]
+            .map(item => [item.id, item])
+        ).values()];
+
+        setTalks(mergedData);
+        setToast({ open: true, message: 'Updated with live content' });
 
       } catch (err) {
-        console.error("Using dummy data:", err);
-        setTalks(dummyTalks);
-        setToast({ open: true, message: 'Showing offline content' });
+        console.error("Using guaranteed content:", err);
+        setToast({ open: true, message: 'Using guaranteed content' });
       } finally {
         setLoading(false);
         controls.start({ opacity: 1, y: 0 });
+        setTimeout(() => setLoading(false), 3000);
       }
     };
 

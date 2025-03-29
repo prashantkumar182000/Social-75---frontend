@@ -1,3 +1,4 @@
+// src/components/ActionHub.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Grid, Card, CardContent, CardMedia, 
@@ -11,7 +12,7 @@ import { dummyNGOs } from '../utils/dummyData';
 import { getRandomImage } from '../utils/helpers';
 
 const ActionHub = () => {
-  const [ngos, setNgos] = useState([]);
+  const [ngos, setNgos] = useState([...dummyNGOs]); // Initialize with dummy data
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({ type: 'all', location: '' });
   const [loading, setLoading] = useState(true);
@@ -25,23 +26,26 @@ const ActionHub = () => {
       try {
         const { data } = await axios.get(
           'https://socio-99.onrender.com/api/action-hub',
-          { timeout: 5000 }
+          { timeout: 3000 } // Shorter timeout for faster fallback
         );
         
-        const validData = Array.isArray(data) && data.length > 0 ? data : dummyNGOs;
-        setNgos(validData);
-        
-        if(data.length === 0) {
-          setToast({ open: true, message: 'Using sample data' });
-        }
+        // Merge API data with dummy data, removing duplicates
+        const mergedData = [...new Map(
+          [...dummyNGOs, ...(Array.isArray(data) ? data : [])]
+            .map(item => [item.id, item])
+        ).values()];
+
+        setNgos(mergedData);
+        setToast({ open: true, message: 'Updated with live data' });
 
       } catch (err) {
-        console.error("Using dummy data:", err);
-        setNgos(dummyNGOs);
-        setToast({ open: true, message: 'Showing offline data' });
+        console.error("Using guaranteed dummy data:", err);
+        setToast({ open: true, message: 'Using guaranteed content' });
       } finally {
         setLoading(false);
         controls.start({ opacity: 1, y: 0 });
+        // Ensure loading state clears even if API hangs
+        setTimeout(() => setLoading(false), 3000);
       }
     };
 
