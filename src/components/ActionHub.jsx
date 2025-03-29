@@ -62,25 +62,8 @@ const ActionHub = () => {
   });
 
   return (
-
-  <Box sx={{ 
-    p: 4, 
-    minHeight: '100vh',
-    background: `linear-gradient(45deg, ${theme.palette.background.default} 0%, #f0f4f8 100%)`,
-    position: 'relative',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'52\' height=\'26\' viewBox=\'0 0 52 26\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z\' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-      opacity: 0.15,
-      zIndex: 0,
-    }
-  }}>
-       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+    <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h3" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
           Action Hub
         </Typography>
@@ -134,23 +117,19 @@ const ActionHub = () => {
                 animate={controls}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                
-                  <Card sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    transition: '0.3s',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    boxShadow: 3,
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    '&:hover': { 
-                      transform: 'translateY(-5px)',
-                      boxShadow: 6,
-                      backgroundColor: 'rgba(255, 255, 255, 1)'
-                    }
-                  }}>
+                <Card sx={{ 
+                  height: '100%', 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  transition: '0.3s',
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  boxShadow: 3,
+                  '&:hover': { 
+                    transform: 'translateY(-5px)',
+                    boxShadow: 6
+                  }
+                }}>
                   <CardMedia
                     component="img"
                     height="200"

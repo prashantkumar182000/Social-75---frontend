@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #f8fafc !important;
+  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -81,13 +81,4 @@ button:focus-visible {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
-}
-
-
-.MuiGrid-root {
-  transition: transform 0.3s ease;
-}
-
-.MuiCard-root {
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
