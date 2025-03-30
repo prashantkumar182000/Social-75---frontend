@@ -34,12 +34,6 @@ The frontend of Social 75 - A comprehensive social impact platform connecting ac
    - Auto-deploys on `main` branch push
    - Environment variables configured in Vercel dashboard
 
-2. **Environment Variables**:
-```env
-VITE_API_URL=https://socio-99.onrender.com
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_domain
-```
 
 ## 🧑‍💻 Development Setup
 
