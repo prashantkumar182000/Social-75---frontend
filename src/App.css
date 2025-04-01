@@ -60,3 +60,9 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+@supports (height: 100svh) {
+  :root {
+    --viewport-height: 100svh;
+  }
+}

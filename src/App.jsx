@@ -14,6 +14,7 @@ import Chat from './components/Chat';
 import Gamification from './components/Gamification';
 import Settings from './components/Settings';
 import ErrorBoundary from './components/ErrorBoundary';
+import PassionFinder from './components/PassionFinder';
 
 const App = () => {
   return (
@@ -22,9 +23,10 @@ const App = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<HeroSection />} />
             <Route path="onboarding" element={<Onboarding />} />
+            <Route element={<ProtectedRoute />}>
             <Route path="content" element={<ContentLibrary />} />
             <Route path="map" element={<InteractiveMap />} />
-            <Route element={<ProtectedRoute />}>
+            <Route path="passion-finder" element={<PassionFinder />} />
               <Route path="action" element={<ActionHub />} />
               <Route path="chat" element={<Chat />} />
               <Route path="gamification" element={<Gamification />} />

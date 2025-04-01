@@ -55,3 +55,146 @@ export const dummyNGOs = [
       url: "https://www.ted.com/talks/matthieu_ricard_the_habits_of_happiness"
     },
   ];
+
+  export const dummyMapUsers = [
+    {
+      id: '101',
+      location: { lat: 28.6139, lng: 77.2090 },
+      interest: "Urban tree planting",
+      category: "environment",
+      timestamp: "2023-10-15T09:30:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+      connections: ['102', '201']
+    },
+    {
+      id: '102',
+      location: { lat: 19.0760, lng: 72.8777 },
+      interest: "Beach cleanup initiatives",
+      category: "environment",
+      timestamp: "2023-11-02T14:15:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+      connections: ['101']
+    },
+    {
+      id: '201',
+      location: { lat: 12.9716, lng: 77.5946 },
+      interest: "STEM education for girls",
+      category: "education",
+      timestamp: "2023-09-28T10:45:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg"
+    },
+    {
+      id: '202',
+      location: { lat: 17.3850, lng: 78.4867 },
+      interest: "Digital literacy in villages",
+      category: "education",
+      timestamp: "2023-10-30T16:20:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/75.jpg"
+    },
+    {
+      id: '301',
+      location: { lat: 22.5726, lng: 88.3639 },
+      interest: "Gender equality workshops",
+      category: "social",
+      timestamp: "2023-11-10T11:00:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/63.jpg"
+    },
+    {
+      id: '302',
+      location: { lat: 26.9124, lng: 75.7873 },
+      interest: "Disability rights advocacy",
+      category: "social",
+      timestamp: "2023-10-22T13:45:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/81.jpg"
+    },
+    {
+      id: '401',
+      location: { lat: 8.5241, lng: 76.9366 },
+      interest: "Mental health awareness",
+      category: "health",
+      timestamp: "2023-11-05T09:15:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/45.jpg"
+    },
+    {
+      id: '402',
+      location: { lat: 25.5941, lng: 85.1376 },
+      interest: "Rural healthcare access",
+      category: "health",
+      timestamp: "2023-10-18T15:30:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/22.jpg"
+    },
+    {
+      id: '501',
+      location: { lat: 13.0827, lng: 80.2707 },
+      interest: "AI for agricultural solutions",
+      category: "technology",
+      timestamp: "2023-11-12T10:00:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/71.jpg"
+    },
+    {
+      id: '502',
+      location: { lat: 18.5204, lng: 73.8567 },
+      interest: "Open-source social tools",
+      category: "technology",
+      timestamp: "2023-10-05T14:50:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/64.jpg"
+    },
+    {
+      id: '601',
+      location: { lat: 15.2993, lng: 74.1240 },
+      interest: "Sustainable tourism",
+      category: "environment",
+      timestamp: "2023-11-08T12:30:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/33.jpg"
+    },
+    {
+      id: '602',
+      location: { lat: 30.7333, lng: 76.7794 },
+      interest: "Civic tech for transparency",
+      category: "technology",
+      timestamp: "2023-10-25T17:00:00Z",
+      avatar: "https://randomuser.me/api/portraits/men/55.jpg"
+    },
+    {
+      id: '603',
+      location: { lat: 23.0225, lng: 72.5714 },
+      interest: "Financial literacy programs",
+      category: "education",
+      timestamp: "2023-11-01T10:20:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/28.jpg"
+    },
+    {
+      id: '604',
+      location: { lat: 26.8467, lng: 80.9462 },
+      interest: "Menstrual hygiene education",
+      category: "health",
+      timestamp: "2023-10-14T11:45:00Z",
+      avatar: "https://randomuser.me/api/portraits/women/19.jpg"
+    }
+  ];
+  
+  export const interestClusters = [
+    { name: "Climate Action", count: 24, icon: "🌱", category: "environment" },
+    { name: "Education Reform", count: 19, icon: "📚", category: "education" },
+    { name: "Mental Health", count: 16, icon: "🧠", category: "health" },
+    { name: "Gender Equality", count: 22, icon: "⚧", category: "social" },
+    { name: "Civic Technology", count: 17, icon: "💻", category: "technology" }
+  ];
+  
+  export const dummyConnections = [
+    {
+      id: 'conn1',
+      userId: '101',
+      connectedUserId: '102',
+      status: 'connected',
+      timestamp: "2023-11-10T14:30:00Z"
+    },
+    {
+      id: 'conn2',
+      userId: '101',
+      connectedUserId: '201',
+      status: 'pending',
+      timestamp: "2023-11-12T09:15:00Z"
+    }
+  ];
+  

@@ -1,502 +1,405 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, useTheme, useMediaQuery, IconButton, Menu, MenuItem } from '@mui/material';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React from 'react';
+import { Box, Typography, Button, useMediaQuery } from '@mui/material';
 import { Link } from 'react-router-dom';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../redux/authSlice';
-import { auth } from '../firebase';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 
-const features = [
-  {
-    title: 'Content Library',
-    description: 'Dive into a world of curated videos, articles, and TED Talks. Learn, grow, and discover your passions.',
-    buttonText: 'Explore Content',
-    link: '/content',
-  },
-  {
-    title: 'Interactive Map',
-    description: 'Connect with like-minded individuals globally. Find events, groups, and communities near you.',
-    buttonText: 'View Map',
-    link: '/map',
-  },
-  {
-    title: 'Action Hub',
-    description: 'Take action with NGOs, funding opportunities, and educational resources. Turn your passion into impact.',
-    buttonText: 'Get Involved',
-    link: '/action',
-  },
-  {
-    title: 'Community Chat',
-    description: 'Engage in real-time discussions, share ideas, and collaborate with a global community.',
-    buttonText: 'Join the Chat',
-    link: '/chat',
-  },
-  {
-    title: 'Gamification',
-    description: 'Earn points, unlock badges, and climb the leaderboard. Make every action rewarding.',
-    buttonText: 'Start Earning',
-    link: '/gamification',
-  },
-];
+// Premium font styling with Clash Display + Satoshi combo
+const PremiumTypography = ({ children, variant = 'h1', shadow = true, glow = false, ...props }) => (
+  <Typography
+    variant={variant}
+    sx={{
+      fontFamily: '"Clash Display", -apple-system, BlinkMacSystemFont, sans-serif',
+      letterSpacing: variant === 'h1' ? '-0.05em' : '0.02em',
+      lineHeight: 1.1,
+      textShadow: shadow ? '0 4px 20px rgba(0,0,0,0.25)' : 'none',
+      position: 'relative',
+      ...(glow && {
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(90deg, #6366F1 0%, #EC4899 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          zIndex: -1,
+          filter: 'blur(15px)',
+          opacity: 0.7
+        }
+      }),
+      ...props.sx
+    }}
+    {...props}
+  >
+    {children}
+  </Typography>
+);
 
 const HeroSection = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [activeFeature, setActiveFeature] = useState(0);
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
-  const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.user);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const isMobile = useMediaQuery('(max-width:900px)');
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // Premium color scheme
+  const bgGradient = 'linear-gradient(152deg, #0A0A12 0%, #1A1A2E 100%)';
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      dispatch(logout());
-    } catch (err) {
-      console.error('Error logging out:', err);
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const featureHeight = window.innerHeight;
-      const newFeature = Math.floor(scrollPosition / featureHeight);
-      setActiveFeature(newFeature);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // Parallax effects
+  const backgroundX = useTransform(mouseX, [0, window.innerWidth], [-30, 30]);
+  const backgroundY = useTransform(mouseY, [0, window.innerHeight], [-30, 30]);
 
   return (
-    <Box
+    <Box 
+      component={motion.div}
+      onMouseMove={(e) => {
+        mouseX.set(e.clientX);
+        mouseY.set(e.clientY);
+      }}
       sx={{
-        minHeight: `${features.length + 1}00vh`, // Dynamic height based on features
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: bgGradient,
         position: 'relative',
-        background: theme.palette.background.default,
-        scrollSnapType: 'y mandatory',
-        overflowY: 'scroll',
+        overflow: 'hidden',
+        px: isMobile ? 4 : 8,
+        py: 12
       }}
     >
-      {/* Fixed Buttons at the Top */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 16,
-          right: 24, // Added margin from the rightmost corner
-          zIndex: 1200, // Ensure buttons are on top
-          display: 'flex',
-          gap: 2,
+      {/* Dynamic grid background */}
+      <motion.div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '200%',
+          height: '200%',
+          backgroundImage: `
+            linear-gradient(to right, rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(99, 102, 241, 0.08) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px',
+          x: backgroundX,
+          y: backgroundY,
+          zIndex: 0
         }}
-      >
-        <Button
-          variant="contained"
-          component={Link}
-          to="/"
-          sx={{
-            backgroundColor: theme.palette.primary.main,
-            color: '#fff',
-            '&:hover': {
-              backgroundColor: theme.palette.primary.dark,
-            },
-            borderRadius: 3, // Rounded corners
-            px: 3, // Horizontal padding
-            py: 1, // Vertical padding
-            fontSize: '1rem', // Font size
-            fontWeight: 600, // Bold text
-          }}
-        >
-          Home
-        </Button>
-        {user ? (
-          <>
-            <IconButton
-              onClick={handleMenuOpen}
-              sx={{
-                backgroundColor: theme.palette.secondary.main,
-                color: '#fff',
-                '&:hover': {
-                  backgroundColor: theme.palette.secondary.dark,
-                },
-                borderRadius: '50%', // Circular button
-                width: 48, // Fixed width
-                height: 48, // Fixed height
-              }}
-            >
-              <SettingsIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              sx={{
-                mt: 1, // Margin from the top
-              }}
-            >
-              <MenuItem component={Link} to="/settings" onClick={handleMenuClose}>
-                My Account
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
-            </Menu>
-          </>
-        ) : (
-          <Button
-            variant="contained"
-            component={Link}
-            to="/login"
-            sx={{
-              backgroundColor: theme.palette.secondary.main,
-              color: '#fff',
-              '&:hover': {
-                backgroundColor: theme.palette.secondary.dark,
-              },
-              borderRadius: 3, // Rounded corners
-              px: 3, // Horizontal padding
-              py: 1, // Vertical padding
-              fontSize: '1rem', // Font size
-              fontWeight: 600, // Bold text
-            }}
-          >
-            Login
-          </Button>
-        )}
-      </Box>
+      />
 
-      {/* Parallax Background */}
-      {/* Parallax Background */}
-<motion.div
-  style={{
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    zIndex: 0, // Ensure the background is behind everything
-  }}
->
-  {/* Floating Particles */}
-  {Array.from({ length: 30 }).map((_, index) => (
-    <motion.div
-      key={index}
-      style={{
-        position: 'absolute',
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        width: 10,
-        height: 10,
-        background: `rgba(255, 255, 255, ${Math.random() * 0.5})`,
-        borderRadius: '50%',
-      }}
-      animate={{
-        y: [0, 100, 0],
-        x: [0, 50, 0],
-        scale: [1, 1.5, 1],
-        opacity: [0.5, 1, 0.5],
-      }}
-      transition={{
-        duration: Math.random() * 5 + 5,
-        repeat: Infinity,
-        ease: 'linear',
-        delay: Math.random() * 2,
-      }}
-    />
-  ))}
-
-  {/* Gradient Blobs */}
-  <motion.div
-    style={{
-      position: 'absolute',
-      top: '20%',
-      left: '10%',
-      width: '300px',
-      height: '300px',
-      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-      borderRadius: '50%',
-      filter: 'blur(80px)',
-      opacity: 0.3,
-    }}
-    animate={{
-      scale: [1, 1.2, 1],
-      rotate: [0, 180, 360],
-      x: [0, 100, 0],
-      y: [0, 50, 0],
-    }}
-    transition={{
-      duration: 20,
-      repeat: Infinity,
-      ease: 'linear',
-    }}
-  />
-  <motion.div
-    style={{
-      position: 'absolute',
-      top: '60%',
-      left: '70%',
-      width: '400px',
-      height: '400px',
-      background: `linear-gradient(45deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-      borderRadius: '50%',
-      filter: 'blur(100px)',
-      opacity: 0.3,
-    }}
-    animate={{
-      scale: [1, 1.5, 1],
-      rotate: [0, -180, 360],
-      x: [0, -100, 0],
-      y: [0, -50, 0],
-    }}
-    transition={{
-      duration: 25,
-      repeat: Infinity,
-      ease: 'linear',
-    }}
-  />
-</motion.div>
-
-      {/* Branding Section */}
-      <Box
-        sx={{
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          zIndex: 2, // Ensure the content is above the parallax background
-          scrollSnapAlign: 'start',
-        }}
-      >
+      {/* Floating energy spheres */}
+      {[
+        { size: 400, color: 'rgba(79, 70, 229, 0.15)', x: '10%', y: '20%' },
+        { size: 600, color: 'rgba(236, 72, 153, 0.1)', x: '80%', y: '50%' },
+        { size: 300, color: 'rgba(167, 139, 250, 0.12)', x: '30%', y: '70%' }
+      ].map((orb, i) => (
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          key={i}
+          style={{
+            position: 'absolute',
+            width: orb.size,
+            height: orb.size,
+            background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
+            borderRadius: '50%',
+            x: orb.x,
+            y: orb.y,
+            filter: 'blur(60px)'
+          }}
+          animate={{
+            x: [orb.x, `calc(${orb.x} + 5%)`, orb.x],
+            y: [orb.y, `calc(${orb.y} + 3%)`, orb.y],
+            opacity: [0.8, 1, 0.8]
+          }}
+          transition={{
+            duration: 15 + i * 5,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+        />
+      ))}
+
+      {/* Content */}
+      <Box sx={{
+        position: 'relative',
+        zIndex: 2,
+        maxWidth: '1200px',
+        mx: 'auto',
+        textAlign: 'center'
+      }}>
+        {/* Social 75 Branding */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          style={{ textAlign: 'center' }}
+          style={{ marginBottom: '2rem' }}
         >
-          <Typography
-            variant="h1"
+          <PremiumTypography 
+            variant="h3"
+            glow
             sx={{
-              fontSize: isMobile ? '4rem' : '6rem', // Larger font size
-              lineHeight: 1.1,
-              mb: 3,
-              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              fontSize: isMobile ? '1.8rem' : '2.5rem',
+              background: 'linear-gradient(90deg, #A5B4FC 0%, #EC4899 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              fontFamily: '"Poppins", sans-serif', // Modern font
-              fontWeight: 800, // Extra bold
-              letterSpacing: '-0.05em', // Tight letter spacing
-              textShadow: '4px 4px 10px rgba(0, 0, 0, 0.2)', // Subtle shadow
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px'
             }}
           >
-            Social 75
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 400,
-              mb: 4,
-              color: theme.palette.text.secondary,
-              maxWidth: '800px',
-              mx: 'auto',
-              fontSize: isMobile ? '1.5rem' : '2rem',
-              fontFamily: '"Inter", sans-serif', // Clean font
-              lineHeight: 1.6, // Improved readability
-            }}
-          >
-            Where Passion Meets Action
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: theme.palette.text.secondary,
-              mb: 6,
-              maxWidth: '600px',
-              mx: 'auto',
-              fontSize: isMobile ? '1rem' : '1.2rem',
-              fontFamily: '"Inter", sans-serif', // Clean font
-              lineHeight: 1.8, // Improved readability
-            }}
-          >
-            Join a global movement to educate, connect, and empower. Together, we can create meaningful change.
-          </Typography>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button
-              variant="contained"
-              color="secondary"
-              size="large"
-              component={Link}
-              to="/onboarding"  // Changed from "/content"
-              sx={{
-                fontSize: '1.2rem',
-                px: 6,
-                py: 2,
-                boxShadow: 4,
-              }}
-            >
-              Get Started
-            </Button>
-          </motion.div>
-
-          {/* Scroll Animation */}
-          {activeFeature < features.length && (
-            <motion.div
-              animate={{
-                y: [0, -10, 0],
+            <motion.span
+              animate={{ 
+                rotate: [0, 15, 0],
+                scale: [1, 1.1, 1]
               }}
               transition={{
-                duration: 2,
-                repeat: Infinity,
-              }}
-              style={{ 
-                marginTop: '40px',
-                display: 'flex',
-                justifyContent: 'center',
+                duration: 5,
+                repeat: Infinity
               }}
             >
-              <Typography
-                variant="body1"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  fontSize: isMobile ? '1rem' : '1.2rem',
-                  fontFamily: '"Inter", sans-serif', // Clean font
-                }}
-              >
-                Scroll to explore
-                <span style={{ fontSize: '1.5rem' }}>↓</span>
-              </Typography>
-            </motion.div>
-          )}
+              ✨
+            </motion.span>
+            SOCIAL 75
+            <motion.span
+              animate={{ 
+                rotate: [0, -15, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                delay: 2
+              }}
+            >
+              ✨
+            </motion.span>
+          </PremiumTypography>
+        </motion.div>
+
+        {/* Tagline */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <PremiumTypography 
+            variant="h5"
+            sx={{
+              color: '#A5B4FC',
+              mb: 2,
+              fontWeight: 600,
+              letterSpacing: '4px',
+              fontFamily: '"Satoshi", sans-serif'
+            }}
+          >
+            THE FUTURE OF ACTIVISM
+          </PremiumTypography>
+        </motion.div>
+
+        {/* Main Headline */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <PremiumTypography 
+            variant="h1"
+            sx={{
+              fontSize: isMobile ? '3.5rem' : '5.5rem',
+              background: 'linear-gradient(90deg, #FFFFFF 30%, #A5B4FC 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 3,
+              fontWeight: 700
+            }}
+          >
+            Power Your Passion
+          </PremiumTypography>
+        </motion.div>
+
+        {/* Subhead */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          <PremiumTypography 
+            variant="h4"
+            shadow={false}
+            sx={{
+              color: 'rgba(255,255,255,0.85)',
+              mb: 5,
+              fontSize: isMobile ? '1.2rem' : '1.5rem',
+              fontWeight: 400,
+              maxWidth: '800px',
+              mx: 'auto',
+              lineHeight: 1.6,
+              fontFamily: '"Satoshi", sans-serif'
+            }}
+          >
+            Social 75 connects you with the tools, community, and resources to turn your 
+            vision for change into reality. Join thousands of activists making an impact.
+          </PremiumTypography>
+        </motion.div>
+
+        {/* CTA Button */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <Button
+            component={Link}
+            to="/onboarding"
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(90deg, #6366F1 0%, #A855F7 100%)',
+              color: 'white',
+              fontSize: '1.1rem',
+              px: 6,
+              py: 2,
+              borderRadius: '12px',
+              fontWeight: 600,
+              letterSpacing: '1px',
+              position: 'relative',
+              overflow: 'hidden',
+              border: 'none',
+              boxShadow: '0 10px 30px rgba(99, 102, 241, 0.5)',
+              '&:hover': {
+                transform: 'translateY(-3px)',
+                boxShadow: '0 15px 40px rgba(99, 102, 241, 0.7)',
+                background: 'linear-gradient(90deg, #6366F1 0%, #EC4899 100%)'
+              }
+            }}
+          >
+            <motion.span
+              animate={{
+                backgroundPosition: ['0% 50%', '100% 50%']
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: 'linear'
+              }}
+              style={{
+                display: 'block',
+                position: 'relative',
+                zIndex: 2
+              }}
+            >
+              JOIN THE MOVEMENT
+            </motion.span>
+            
+            {/* Button shine effect */}
+            <motion.div
+              animate={{
+                x: ['-100%', '150%']
+              }}
+              transition={{
+                duration: 3,
+                repeat: Infinity
+              }}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '50%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                transform: 'skewX(-20deg)'
+              }}
+            />
+          </Button>
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          style={{ marginTop: '6rem' }}
+        >
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: isMobile ? 3 : 6,
+            flexWrap: 'wrap'
+          }}>
+            {[
+              { value: '10K+', label: 'Activists' },
+              { value: '500+', label: 'Organizations' },
+              { value: '24/7', label: 'Support' }
+            ].map((stat, i) => (
+              <Box key={i} sx={{ textAlign: 'center' }}>
+                <PremiumTypography 
+                  variant="h2" 
+                  sx={{ 
+                    color: '#E0E7FF',
+                    mb: 1,
+                    fontSize: isMobile ? '2rem' : '3rem'
+                  }}
+                >
+                  {stat.value}
+                </PremiumTypography>
+                <PremiumTypography 
+                  variant="h6" 
+                  shadow={false}
+                  sx={{ 
+                    color: 'rgba(255,255,255,0.7)',
+                    fontFamily: '"Satoshi", sans-serif',
+                    fontWeight: 500,
+                    letterSpacing: '1px'
+                  }}
+                >
+                  {stat.label}
+                </PremiumTypography>
+              </Box>
+            ))}
+          </Box>
         </motion.div>
       </Box>
 
-      {/* Feature Sections */}
-      {features.map((feature, index) => (
-        <Box
-          key={index}
-          sx={{
-            height: '100vh',
+      {/* Scroll indicator */}
+      <motion.div
+        style={{
+          position: 'absolute',
+          bottom: '40px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 3
+        }}
+        animate={{
+          y: [0, 15, 0],
+          opacity: [0.6, 1, 0.6]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity
+        }}
+      >
+        <PremiumTypography 
+          variant="body2" 
+          sx={{ 
+            color: 'rgba(255,255,255,0.7)',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            zIndex: 2, // Ensure the content is above the parallax background
-            scrollSnapAlign: 'start',
+            fontFamily: '"Satoshi", sans-serif',
+            fontWeight: 500
           }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
             animate={{
-              opacity: activeFeature === index + 1 ? 1 : 0,
-              y: activeFeature === index + 1 ? 0 : 50,
+              y: [0, 10, 0]
             }}
-            transition={{ duration: 0.8 }}
-            style={{ textAlign: 'center' }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity
+            }}
           >
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: isMobile ? '3rem' : '4.5rem', // Larger font size
-                lineHeight: 1.1,
-                mb: 3,
-                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontFamily: '"Poppins", sans-serif', // Modern font
-                fontWeight: 800, // Extra bold
-                letterSpacing: '-0.05em', // Tight letter spacing
-                textShadow: '4px 4px 10px rgba(0, 0, 0, 0.2)', // Subtle shadow
-              }}
-            >
-              {feature.title}
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 400,
-                mb: 4,
-                color: theme.palette.text.secondary,
-                maxWidth: '800px',
-                mx: 'auto',
-                fontSize: isMobile ? '1.2rem' : '1.5rem',
-                fontFamily: '"Inter", sans-serif', // Clean font
-                lineHeight: 1.6, // Improved readability
-              }}
-            >
-              {feature.description}
-            </Typography>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                size="large"
-                component={Link}
-                to={feature.link}
-                sx={{
-                  fontSize: '1.2rem',
-                  px: 6,
-                  py: 2,
-                  boxShadow: 4,
-                  borderRadius: 3, // Rounded corners
-                  fontWeight: 600, // Bold text
-                }}
-              >
-                {feature.buttonText}
-              </Button>
-            </motion.div>
-
-            {/* Scroll Animation */}
-            {index < features.length - 1 && (
-              <motion.div
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                style={{ 
-                  marginTop: '40px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    fontSize: isMobile ? '1rem' : '1.2rem',
-                    fontFamily: '"Inter", sans-serif', // Clean font
-                  }}
-                >
-                  Scroll to explore
-                  <span style={{ fontSize: '1.5rem' }}>↓</span>
-                </Typography>
-              </motion.div>
-            )}
+            ↓
           </motion.div>
-        </Box>
-      ))}
+          EXPLORE SOCIAL 75
+        </PremiumTypography>
+      </motion.div>
     </Box>
   );
 };

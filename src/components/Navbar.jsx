@@ -43,6 +43,7 @@ const Navbar = () => {
     { label: 'Explore', path: '/', icon: '🌎' },
     { label: 'Content', path: '/content', icon: '🎬' },
     { label: 'Map', path: '/map', icon: '📍' },
+    { label: 'Find Passion', path: '/passion-finder', icon: '🔍' },
     { label: 'Action', path: '/action', protected: true, icon: '⚡' },
     { label: 'Community', path: '/chat', protected: true, icon: '💬' },
   ];

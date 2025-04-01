@@ -1,0 +1,26 @@
+/* Custom cluster markers */
+.custom-cluster {
+    background: #4CAF50;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+  }
+  
+  /* Popup styling */
+  .user-popup {
+    min-width: 200px;
+  }
+  
+  .user-popup button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
