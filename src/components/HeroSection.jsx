@@ -375,30 +375,6 @@ const HeroSection = () => {
           repeat: Infinity
         }}
       >
-        <PremiumTypography 
-          variant="body2" 
-          sx={{ 
-            color: 'rgba(255,255,255,0.7)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            fontFamily: '"Satoshi", sans-serif',
-            fontWeight: 500
-          }}
-        >
-          <motion.div
-            animate={{
-              y: [0, 10, 0]
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity
-            }}
-          >
-            ↓
-          </motion.div>
-          EXPLORE SOCIAL 75
-        </PremiumTypography>
       </motion.div>
     </Box>
   );
