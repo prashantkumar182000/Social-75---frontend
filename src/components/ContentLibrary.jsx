@@ -11,54 +11,87 @@ import { dummyTalks } from '../utils/dummyData';
 import { getRandomImage } from '../utils/helpers';
 
 const ContentLibrary = () => {
-  const [talks, setTalks] = useState([...dummyTalks]);
+  const [talks, setTalks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '' });
   const theme = useTheme();
-  useMediaQuery(theme.breakpoints.down('sm')); // Removed unused variable
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const controls = useAnimation();
 
-  useEffect(() => {
-    const fetchData = async () => {
+  // Enhanced fetch function with multiple fallbacks
+  const fetchContentData = async () => {
+    const apiEndpoints = [
+      'https://socio-99.onrender.com/api/content',
+      '/api/content' // Local proxy fallback
+    ];
+
+    for (const endpoint of apiEndpoints) {
       try {
-        // Try direct API first with increased timeout
-        const { data } = await axios.get(
-          'https://socio-99.onrender.com/api/content',
-          {
-            timeout: 8000, // Increased timeout
-            headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'no-cache'
-            }
-          }
-        );
-
-        // Fallback to dummy data if empty response
-  const mergedData = data.length > 0
-    ? [...new Map(
-        [...dummyTalks, ...data].map(item => {
-          if (!item.id && !item._id) {
-            console.warn('Item missing identifier:', item);
-          }
-          return [item.id || item._id || Math.random().toString(36), item];
-        })
-      ).values()]
-    : [...dummyTalks];
-
-        setTalks(mergedData);
-        setToast({ 
-          open: true, 
-          message: data && data.length > 0 
-            ? 'Updated with live content' 
-            : 'Using enhanced content' 
+        const response = await axios.get(endpoint, {
+          timeout: 8000,
+          headers: {
+            'Accept': 'application/json',
+            // Remove problematic headers
+          },
+          transformRequest: [(data, headers) => {
+            // Clean up headers that might cause CORS issues
+            delete headers['Pragma'];
+            delete headers['Cache-Control'];
+            return data;
+          }]
         });
 
-      } catch (err) {
-        console.error("Fallback to dummy data:", err);
-        setToast({ 
-          open: true, 
-          message: 'Using guaranteed content' 
+        if (response.data && Array.isArray(response.data)) {
+          return response.data;
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch from ${endpoint}:`, error);
+        continue;
+      }
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        // Try to fetch data with multiple fallbacks
+        const apiData = await fetchContentData();
+        
+        // Process the data with proper fallbacks
+        const processedData = (Array.isArray(apiData) ? apiData : []).map(item => ({
+          id: item.id || item._id || Math.random().toString(36).slice(2),
+          title: item.title || 'Untitled Talk',
+          description: item.description || 'No description available',
+          duration: item.duration || 0,
+          speaker: item.speaker || 'Unknown Speaker',
+          url: item.url || '#'
+        }));
+
+        // Merge with dummy data if needed
+        const finalData = processedData.length > 0 
+          ? [...new Map(
+              [...dummyTalks, ...processedData].map(item => [item.id, item])
+            ).values()]
+          : [...dummyTalks];
+
+        setTalks(finalData);
+        setToast({
+          open: true,
+          message: processedData.length > 0 
+            ? 'Content loaded successfully' 
+            : 'Using enhanced content library'
+        });
+
+      } catch (error) {
+        console.error('All data loading methods failed:', error);
+        setTalks([...dummyTalks]);
+        setToast({
+          open: true,
+          message: 'Using guaranteed content'
         });
       } finally {
         setLoading(false);
@@ -66,53 +99,20 @@ const ContentLibrary = () => {
       }
     };
 
-    const abortController = new AbortController();
-    fetchData();
-
-    return () => abortController.abort();
+    loadData();
   }, [controls]);
 
   const filteredTalks = talks.filter(talk => {
-    const searchMatch = talk.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      talk.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    return searchMatch;
+    const safeTitle = talk.title?.toLowerCase() || '';
+    const safeDescription = talk.description?.toLowerCase() || '';
+    return safeTitle.includes(searchTerm.toLowerCase()) || 
+           safeDescription.includes(searchTerm.toLowerCase());
   });
 
   return (
-    <Box sx={{ 
-      p: 4, 
-      bgcolor: theme.palette.background.default, 
-      minHeight: '100vh',
-      position: 'relative'
-    }}>
-      {/* Debug overlay - shows in development only */}
-      {process.env.NODE_ENV === 'development' && (
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          bgcolor: 'rgba(0,0,0,0.7)',
-          color: 'white',
-          p: 1,
-          fontSize: '0.8rem',
-          zIndex: 1000
-        }}>
-          API Status: {loading ? 'Loading...' : 'Live'}
-        </Box>
-      )}
-
-      <Box sx={{ 
-        mb: 4, 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        flexWrap: 'wrap', 
-        gap: 2 
-      }}>
-        <Typography variant="h3" sx={{ 
-          fontWeight: 700, 
-          color: theme.palette.primary.main 
-        }}>
+    <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Typography variant="h3" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
           Content Library
         </Typography>
         
@@ -125,40 +125,23 @@ const ContentLibrary = () => {
           sx={{ 
             bgcolor: theme.palette.background.paper,
             maxWidth: 600,
-            '& .MuiOutlinedInput-root': { 
-              borderRadius: 2,
-            },
+            '& .MuiOutlinedInput-root': { borderRadius: 2 },
           }}
         />
       </Box>
 
       {loading ? (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          minHeight: '60vh'
-        }}>
-          <CircularProgress 
-            size={60} 
-            sx={{ 
-              color: theme.palette.primary.main,
-            }} 
-          />
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+          <CircularProgress size={60} sx={{ color: theme.palette.primary.main }} />
         </Box>
       ) : (
         <Grid container spacing={4}>
           {filteredTalks.map((talk, index) => (
-            <Grid item xs={12} sm={6} md={4} key={talk.id || talk._id || index}>
+            <Grid item xs={12} sm={6} md={4} key={talk.id}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
-                transition={{ 
-                  delay: index * 0.1, 
-                  duration: 0.5,
-                  type: 'spring',
-                  stiffness: 100
-                }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
               >
                 <Card sx={{ 
                   height: '100%', 
@@ -170,66 +153,34 @@ const ContentLibrary = () => {
                   boxShadow: 3,
                   '&:hover': { 
                     transform: 'translateY(-5px)',
-                    boxShadow: 6,
+                    boxShadow: 6
                   }
                 }}>
                   <CardMedia
                     component="img"
                     height="200"
-                    image={getRandomImage(talk.id || talk._id)}
-                    alt={talk.title || 'Talk image'}
-                    sx={{ 
-                      objectFit: 'cover',
-                      backgroundColor: theme.palette.action.hover
-                    }}
+                    image={getRandomImage(talk.id)}
+                    alt={talk.title}
+                    sx={{ objectFit: 'cover' }}
                     onError={(e) => {
-                      e.target.src = `https://picsum.photos/seed/${talk.id || talk._id}/400/300`;
+                      e.target.src = `https://picsum.photos/seed/${talk.id}/400/300`;
                     }}
                   />
-                  <CardContent sx={{ 
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        fontWeight: 700,
-                        minHeight: '3em'
-                      }}
-                    >
-                      {talk.title || 'Untitled Talk'}
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+                      {talk.title}
                     </Typography>
-                    {talk.speaker && (
-                      <Chip 
-                        label={talk.speaker} 
-                        color="primary" 
-                        size="small" 
-                        sx={{ 
-                          mb: 2, 
-                          borderRadius: 2,
-                          alignSelf: 'flex-start'
-                        }}
-                      />
-                    )}
-                    <Typography 
-                      variant="body2" 
-                      component="p"
-                      sx={{ 
-                        minHeight: 100,
-                        flexGrow: 1
-                      }}
-                    >
-                      {talk.description || 'No description available'}
+                    <Chip 
+                      label={talk.speaker} 
+                      color="primary" 
+                      size="small" 
+                      sx={{ mb: 2, borderRadius: 2 }}
+                    />
+                    <Typography variant="body2" paragraph sx={{ minHeight: 100 }}>
+                      {talk.description}
                     </Typography>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      mt: 'auto'
-                    }}>
-                      {talk.duration && (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      {talk.duration > 0 && (
                         <Chip 
                           label={`${Math.floor(talk.duration / 60)} mins`}
                           variant="outlined"
@@ -238,23 +189,21 @@ const ContentLibrary = () => {
                       )}
                       <Button 
                         variant="contained"
-                        href={talk.url || '#'}
+                        href={talk.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        disabled={!talk.url}
+                        disabled={!talk.url || talk.url === '#'}
                         sx={{ 
                           borderRadius: 2,
                           px: 3,
                           bgcolor: theme.palette.primary.main,
-                          '&:hover': { 
-                            bgcolor: theme.palette.primary.dark 
-                          },
+                          '&:hover': { bgcolor: theme.palette.primary.dark },
                           '&:disabled': {
-                            bgcolor: theme.palette.action.disabled
+                            bgcolor: theme.palette.action.disabledBackground
                           }
                         }}
                       >
-                        {talk.url ? 'Watch Now' : 'Link Unavailable'}
+                        {talk.url && talk.url !== '#' ? 'Watch Now' : 'Unavailable'}
                       </Button>
                     </Box>
                   </CardContent>
@@ -270,7 +219,6 @@ const ContentLibrary = () => {
         autoHideDuration={4000}
         onClose={() => setToast(prev => ({ ...prev, open: false }))}
         message={toast.message}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         action={
           <IconButton
             size="small"
@@ -280,11 +228,6 @@ const ContentLibrary = () => {
             <Close fontSize="small" />
           </IconButton>
         }
-        sx={{
-          '& .MuiSnackbarContent-root': {
-            bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.900'
-          }
-        }}
       />
     </Box>
   );
