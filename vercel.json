@@ -1,11 +1,25 @@
 {
-  "headers": [
+  "rewrites": [
     {
       "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
       "headers": [
         {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET,OPTIONS"
+        },
+        {
           "key": "Cache-Control",
-          "value": "public, max-age=60, stale-while-revalidate=300"
+          "value": "no-cache"
         }
       ]
     }
