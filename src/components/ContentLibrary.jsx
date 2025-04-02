@@ -13,11 +13,12 @@ const ContentLibrary = () => {
         const response = await axios.get(
           'https://socio-99.onrender.com/api/content',
           {
-            timeout: 3000,
+            timeout: 8000, // Increased from 3000ms
             withCredentials: false, // Changed from true
             headers: {
               'Accept': 'application/json',
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-cache'
             }
           }
         );
