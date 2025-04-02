@@ -1,3 +1,4 @@
+// src/components/ContentLibrary.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Typography, Grid, Card, CardContent, CardMedia, 
@@ -11,7 +12,7 @@ import { dummyTalks } from '../utils/dummyData';
 import { getRandomImage } from '../utils/helpers';
 
 const ContentLibrary = () => {
-  const [talks, setTalks] = useState([]);
+  const [talks, setTalks] = useState([...dummyTalks]); // Initialize with dummy data
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({ open: false, message: '' });
@@ -19,94 +20,40 @@ const ContentLibrary = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const controls = useAnimation();
 
-  // Enhanced fetch function with multiple fallbacks
-  const fetchContentData = async () => {
-    const apiEndpoints = [
-      'https://socio-99.onrender.com/api/content',
-      '/api/content' // Local proxy fallback
-    ];
-
-    for (const endpoint of apiEndpoints) {
-      try {
-        const response = await axios.get(endpoint, {
-          timeout: 8000,
-          headers: {
-            'Accept': 'application/json',
-            // Remove problematic headers
-          },
-          transformRequest: [(data, headers) => {
-            // Clean up headers that might cause CORS issues
-            delete headers['Pragma'];
-            delete headers['Cache-Control'];
-            return data;
-          }]
-        });
-
-        if (response.data && Array.isArray(response.data)) {
-          return response.data;
-        }
-      } catch (error) {
-        console.warn(`Failed to fetch from ${endpoint}:`, error);
-        continue;
-      }
-    }
-    return null;
-  };
-
   useEffect(() => {
-    const loadData = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
+        const { data } = await axios.get(
+          'https://socio-99.onrender.com/api/content',
+          { timeout: 3000 }
+        );
         
-        // Try to fetch data with multiple fallbacks
-        const apiData = await fetchContentData();
-        
-        // Process the data with proper fallbacks
-        const processedData = (Array.isArray(apiData) ? apiData : []).map(item => ({
-          id: item.id || item._id || Math.random().toString(36).slice(2),
-          title: item.title || 'Untitled Talk',
-          description: item.description || 'No description available',
-          duration: item.duration || 0,
-          speaker: item.speaker || 'Unknown Speaker',
-          url: item.url || '#'
-        }));
+        // Merge API data with dummy data
+        const mergedData = [...new Map(
+          [...dummyTalks, ...(Array.isArray(data) ? data : [])]
+            .map(item => [item.id, item])
+        ).values()];
 
-        // Merge with dummy data if needed
-        const finalData = processedData.length > 0 
-          ? [...new Map(
-              [...dummyTalks, ...processedData].map(item => [item.id, item])
-            ).values()]
-          : [...dummyTalks];
+        setTalks(mergedData);
+        setToast({ open: true, message: 'Updated with live content' });
 
-        setTalks(finalData);
-        setToast({
-          open: true,
-          message: processedData.length > 0 
-            ? 'Content loaded successfully' 
-            : 'Using enhanced content library'
-        });
-
-      } catch (error) {
-        console.error('All data loading methods failed:', error);
-        setTalks([...dummyTalks]);
-        setToast({
-          open: true,
-          message: 'Using guaranteed content'
-        });
+      } catch (err) {
+        console.error("Using guaranteed content:", err);
+        setToast({ open: true, message: 'Using guaranteed content' });
       } finally {
         setLoading(false);
         controls.start({ opacity: 1, y: 0 });
+        setTimeout(() => setLoading(false), 3000);
       }
     };
 
-    loadData();
+    fetchData();
   }, [controls]);
 
   const filteredTalks = talks.filter(talk => {
-    const safeTitle = talk.title?.toLowerCase() || '';
-    const safeDescription = talk.description?.toLowerCase() || '';
-    return safeTitle.includes(searchTerm.toLowerCase()) || 
-           safeDescription.includes(searchTerm.toLowerCase());
+    const searchMatch = talk.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      talk.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return searchMatch;
   });
 
   return (
@@ -137,7 +84,7 @@ const ContentLibrary = () => {
       ) : (
         <Grid container spacing={4}>
           {filteredTalks.map((talk, index) => (
-            <Grid item xs={12} sm={6} md={4} key={talk.id}>
+            <Grid item xs={12} sm={6} md={4} key={talk.id || index}>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={controls}
@@ -162,9 +109,6 @@ const ContentLibrary = () => {
                     image={getRandomImage(talk.id)}
                     alt={talk.title}
                     sx={{ objectFit: 'cover' }}
-                    onError={(e) => {
-                      e.target.src = `https://picsum.photos/seed/${talk.id}/400/300`;
-                    }}
                   />
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
@@ -180,30 +124,24 @@ const ContentLibrary = () => {
                       {talk.description}
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      {talk.duration > 0 && (
-                        <Chip 
-                          label={`${Math.floor(talk.duration / 60)} mins`}
-                          variant="outlined"
-                          sx={{ borderRadius: 2 }}
-                        />
-                      )}
+                      <Chip 
+                        label={`${Math.floor(talk.duration / 60)} mins`}
+                        variant="outlined"
+                        sx={{ borderRadius: 2 }}
+                      />
                       <Button 
                         variant="contained"
                         href={talk.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        disabled={!talk.url || talk.url === '#'}
                         sx={{ 
                           borderRadius: 2,
                           px: 3,
                           bgcolor: theme.palette.primary.main,
-                          '&:hover': { bgcolor: theme.palette.primary.dark },
-                          '&:disabled': {
-                            bgcolor: theme.palette.action.disabledBackground
-                          }
+                          '&:hover': { bgcolor: theme.palette.primary.dark }
                         }}
                       >
-                        {talk.url && talk.url !== '#' ? 'Watch Now' : 'Unavailable'}
+                        Watch Now
                       </Button>
                     </Box>
                   </CardContent>
