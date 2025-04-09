@@ -6,6 +6,14 @@
 
 The frontend of Social 75 - A comprehensive social impact platform connecting activists, NGOs, and volunteers through curated content, interactive maps, and community features.
 
+## 🎥 Demo Videos
+
+### Version 1 Demo
+[![Social 75 V1 Demo](https://img.youtube.com/vi/YOUR_V1_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_V1_VIDEO_ID)
+
+### Version 2 Demo
+[![Social 75 V2 Demo](https://img.youtube.com/vi/YOUR_V2_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_V2_VIDEO_ID)
+
 ## ✨ Features
 
 - **Content Library**: Browse TED Talks and educational resources
@@ -33,7 +41,6 @@ The frontend of Social 75 - A comprehensive social impact platform connecting ac
    - Connected to GitHub repository
    - Auto-deploys on `main` branch push
    - Environment variables configured in Vercel dashboard
-
 
 ## 🧑‍💻 Development Setup
 
@@ -90,4 +97,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Material-UI](https://mui.com/) for UI components
 - [Vercel](https://vercel.com/) for hosting
 - [Render](https://render.com/) for backend services
-```
