@@ -9,7 +9,7 @@ The frontend of Social 75 - A comprehensive social impact platform connecting ac
 ## 🎥 Demo Videos
 
 ### Version 1 Demo
-[![Social 75 V1 Demo](https://img.youtube.com/vi/YOUR_V1_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_V1_VIDEO_ID)
+https://github.com/user-attachments/assets/d91ca4b6-7a1c-41ac-b1f5-e91cfb78ebc1
 
 ### Version 2 Demo [current]
 https://github.com/user-attachments/assets/15be468f-8fc8-4df2-ac16-8fd37db0eecb
